@@ -11,6 +11,8 @@ export type MinimalQueue = Pick<
   | 'closing'
   | 'waitUntilReady'
   | 'removeListener'
+  | 'parse'
+  | 'stringify'
   | 'emit'
   | 'on'
   | 'redisVersion'

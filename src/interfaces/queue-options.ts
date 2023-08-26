@@ -30,6 +30,16 @@ export interface QueueBaseOptions {
    * Prefix for all queue keys.
    */
   prefix?: string;
+
+  /**
+   * Serialize the data to a string
+   */
+  stringify?: <T>(data: T) => string;
+
+  /**
+   * Parse a string to a typed object
+   */
+  parse?: <T>(json: string) => T;
 }
 
 /**

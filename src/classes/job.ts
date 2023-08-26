@@ -1,6 +1,7 @@
 import { ChainableCommander } from 'ioredis';
 import { invert } from 'lodash';
 import { debuglog } from 'util';
+
 import {
   BackoffOptions,
   BulkJobOptions,
@@ -16,24 +17,24 @@ import {
 } from '../interfaces';
 import {
   FinishedStatus,
+  JobJsonSandbox,
   JobsOptions,
   JobState,
-  JobJsonSandbox,
   MinimalQueue,
   RedisJobOptions,
 } from '../types';
 import {
   errorObject,
-  isEmpty,
   getParentKey,
+  isEmpty,
   lengthInUtf8Bytes,
   parseObjectValues,
   tryCatch,
 } from '../utils';
 import { Backoffs } from './backoffs';
+import type { QueueEvents } from './queue-events';
 import { Scripts } from './scripts';
 import { UnrecoverableError } from './unrecoverable-error';
-import type { QueueEvents } from './queue-events';
 
 const logger = debuglog('bull');
 
@@ -281,7 +282,7 @@ export class Job<
     json: JobJsonRaw,
     jobId?: string,
   ): Job<T, R, N> {
-    const data = JSON.parse(json.data || '{}');
+    const data = queue.parse<T>(json.data || '{}');
     const opts = Job.optsFromJSON(json.opts);
 
     const job = new this<T, R, N>(
@@ -389,7 +390,9 @@ export class Job<
     return {
       id: this.id,
       name: this.name,
-      data: JSON.stringify(typeof this.data === 'undefined' ? {} : this.data),
+      data: this.queue.stringify(
+        typeof this.data === 'undefined' ? {} : this.data,
+      ),
       opts: this.optsAsJSON(this.opts),
       parent: this.parent ? { ...this.parent } : undefined,
       parentKey: this.parentKey,

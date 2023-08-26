@@ -4,7 +4,29 @@
 
 /*eslint-env node */
 'use strict';
+import { ChainableCommander } from 'ioredis';
 import { Packr } from 'msgpackr';
+
+import { ErrorCode } from '../enums';
+import {
+  JobJson,
+  JobJsonRaw,
+  KeepJobs,
+  MinimalJob,
+  MoveToWaitingChildrenOpts,
+  ParentOpts,
+  RedisClient,
+  WorkerOptions,
+} from '../interfaces';
+import {
+  FinishedPropValAttribute,
+  FinishedStatus,
+  JobState,
+  JobType,
+  MinimalQueue,
+  RedisJobOptions,
+} from '../types';
+import { array2obj, getParentKey, isRedisVersionLowerThan } from '../utils';
 
 const packer = new Packr({
   useRecords: false,
@@ -12,28 +34,6 @@ const packer = new Packr({
 });
 
 const pack = packer.pack;
-
-import {
-  JobJson,
-  JobJsonRaw,
-  MinimalJob,
-  MoveToWaitingChildrenOpts,
-  ParentOpts,
-  RedisClient,
-  WorkerOptions,
-  KeepJobs,
-} from '../interfaces';
-import {
-  JobState,
-  JobType,
-  FinishedStatus,
-  FinishedPropValAttribute,
-  MinimalQueue,
-  RedisJobOptions,
-} from '../types';
-import { ErrorCode } from '../enums';
-import { array2obj, getParentKey, isRedisVersionLowerThan } from '../utils';
-import { ChainableCommander } from 'ioredis';
 
 export type JobData = [JobJsonRaw | number, string?];
 
@@ -214,7 +214,7 @@ export class Scripts {
     const client = await this.queue.client;
 
     const keys = [this.queue.toKey(job.id)];
-    const dataJson = JSON.stringify(data);
+    const dataJson = this.queue.stringify(data);
 
     const result = await (<any>client).updateData(keys.concat([dataJson]));
 

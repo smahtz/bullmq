@@ -1,11 +1,12 @@
 import { EventEmitter } from 'events';
+import { ChainableCommander, Redis } from 'ioredis';
 import { get } from 'lodash';
-import { Redis, ChainableCommander } from 'ioredis';
 import { v4 } from 'uuid';
+
 import {
   FlowJob,
-  FlowQueuesOpts,
   FlowOpts,
+  FlowQueuesOpts,
   IoredisListener,
   QueueBaseOptions,
   RedisClient,
@@ -440,6 +441,14 @@ export class FlowProducer extends EventEmitter {
       emit: this.emit.bind(this) as any,
       on: this.on.bind(this) as any,
       redisVersion: this.connection.redisVersion,
+      parse: <T>(json: string): T => {
+        return this.opts.parse ? this.opts.parse(json) : JSON.parse(json);
+      },
+      stringify: <T>(data: T): string => {
+        return this.opts.stringify
+          ? this.opts.stringify(data)
+          : JSON.stringify(data);
+      },
     };
   }
 

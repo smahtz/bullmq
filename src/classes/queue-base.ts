@@ -1,10 +1,11 @@
 import { EventEmitter } from 'events';
+
 import { QueueBaseOptions, RedisClient } from '../interfaces';
 import { MinimalQueue } from '../types';
 import { delay, DELAY_TIME_5, isNotConnectionError } from '../utils';
-import { RedisConnection } from './redis-connection';
 import { Job } from './job';
 import { KeysMap, QueueKeys } from './queue-keys';
+import { RedisConnection } from './redis-connection';
 import { Scripts } from './scripts';
 
 /**
@@ -75,6 +76,16 @@ export class QueueBase extends EventEmitter implements MinimalQueue {
     this.keys = queueKeys.getKeys(name);
     this.toKey = (type: string) => queueKeys.toKey(name, type);
     this.scripts = new Scripts(this);
+  }
+
+  parse<T>(json: string): T {
+    return this.opts.parse ? this.opts.parse(json) : JSON.parse(json);
+  }
+
+  stringify<T>(data: T): string {
+    return this.opts.stringify
+      ? this.opts.stringify(data)
+      : JSON.stringify(data);
   }
 
   /**
